@@ -12,7 +12,9 @@ RUN pip install --upgrade pip && pip install ".[dev]"
 COPY app /app/app
 COPY config /app/config
 
-RUN adduser --disabled-password --gecos "" orchestrator
+RUN adduser --disabled-password --gecos "" orchestrator \
+    && mkdir -p /app/data \
+    && chown -R orchestrator:orchestrator /app/data
 USER orchestrator
 
 EXPOSE 8000
