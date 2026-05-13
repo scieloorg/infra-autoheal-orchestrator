@@ -1,0 +1,33 @@
+services:
+  orchestrator:
+    build:
+      context: ./orchestrator
+    image: infra-autoheal-orchestrator:local
+    ports:
+      - "${ORCH_PORT:-8000}:8000"
+    environment:
+      ORCH_HOSTS_CONFIG_PATH: /app/config/hosts.yaml
+      ORCH_POLICIES_CONFIG_PATH: /app/config/policies.yaml
+      ORCH_SQLITE_PATH: /app/data/orchestrator.sqlite3
+      ORCH_LOG_LEVEL: ${ORCH_LOG_LEVEL:-INFO}
+      ORCH_WEBHOOK_TOKEN: ${ORCH_WEBHOOK_TOKEN:?set ORCH_WEBHOOK_TOKEN in .env}
+      ORCH_SSH__PRIVATE_KEY_PATH: /run/secrets/ssh_autoheal_key
+      ORCH_SSH__KNOWN_HOSTS_PATH: /app/config/known_hosts
+      ORCH_SSH__PASSWORD_AUTH: "false"
+      ORCH_PROXMOX__BASE_URL: ${ORCH_PROXMOX__BASE_URL:-}
+      ORCH_PROXMOX__TOKEN_ID: ${ORCH_PROXMOX__TOKEN_ID:-}
+      ORCH_PROXMOX__TOKEN_SECRET: ${ORCH_PROXMOX__TOKEN_SECRET:-}
+      ORCH_PROXMOX__VERIFY_TLS: ${ORCH_PROXMOX__VERIFY_TLS:-true}
+    volumes:
+      - ./orchestrator/config:/app/config:ro
+      - orchestrator-data:/app/data
+    secrets:
+      - ssh_autoheal_key
+    restart: unless-stopped
+
+volumes:
+  orchestrator-data:
+
+secrets:
+  ssh_autoheal_key:
+    file: ${SSH_PRIVATE_KEY_PATH:?set SSH_PRIVATE_KEY_PATH in .env}

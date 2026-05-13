@@ -80,7 +80,9 @@ curl -X POST http://127.0.0.1:8000/webhook/alertmanager \
 ## Docker
 
 ```bash
-cd orchestrator
+cp .env.example .env
+openssl rand -hex 32
+# edite ORCH_WEBHOOK_TOKEN e SSH_PRIVATE_KEY_PATH no .env
 docker compose up --build
 ```
 
