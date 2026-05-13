@@ -69,7 +69,7 @@ curl -X POST http://127.0.0.1:8000/webhook/alertmanager \
       {
         "labels": {
           "alertname": "ApacheDown",
-          "instance": "node01-submission.scielo.org",
+          "instance": "app-node-01.example.local",
           "action": "restart_apache"
         }
       }
@@ -128,7 +128,7 @@ curl -X POST http://127.0.0.1:8000/webhook/alertmanager \
       {
         "labels": {
           "alertname": "ApacheDown",
-          "instance": "node01-submission.scielo.org",
+          "instance": "app-node-01.example.local",
           "action": "restart_apache"
         }
       }
@@ -150,14 +150,14 @@ Exemplo para gerar uma chave dedicada:
 
 ```bash
 ssh-keygen -t ed25519 -f ~/.ssh/infra_autoheal_ed25519 -C infra-autoheal-orchestrator
-ssh-copy-id -i ~/.ssh/infra_autoheal_ed25519.pub rundeck@node01-submission.scielo.org
-ssh-copy-id -i ~/.ssh/infra_autoheal_ed25519.pub rundeck@mysql.scielo.org
+ssh-copy-id -i ~/.ssh/infra_autoheal_ed25519.pub rundeck@app-node-01.example.local
+ssh-copy-id -i ~/.ssh/infra_autoheal_ed25519.pub rundeck@db-node-01.example.local
 ```
 
 Crie o `known_hosts` usado pelo container:
 
 ```bash
-ssh-keyscan -H node01-submission.scielo.org mysql.scielo.org > orchestrator/config/known_hosts
+ssh-keyscan -H app-node-01.example.local db-node-01.example.local > orchestrator/config/known_hosts
 ```
 
 Rodando localmente:

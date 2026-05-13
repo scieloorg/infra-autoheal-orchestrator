@@ -19,21 +19,23 @@ async def test_apache_down_restarts_only_httpd_on_allowed_host(orchestrator_fact
     orchestrator, ssh, http, _ = orchestrator_factory()
 
     result = await orchestrator.process_alert(
-        alert("ApacheDown", "node01-submission.scielo.org", "restart_apache")
+        alert("ApacheDown", "app-node-01.example.local", "restart_apache")
     )
 
     assert result.status == "success"
     assert ("restart_apache", "httpd") in ssh.calls
     assert ("is_active_apache", "httpd") in ssh.calls
     assert all(call[1] != "mariadb" for call in ssh.calls if call[0].startswith("restart"))
-    assert http.urls == ["https://node01-submission.scielo.org/"]
+    assert http.urls == ["https://app-node-01.example.local/"]
 
 
 @pytest.mark.asyncio
 async def test_mariadb_down_restarts_only_mariadb_on_allowed_host(orchestrator_factory):
     orchestrator, ssh, _, _ = orchestrator_factory()
 
-    result = await orchestrator.process_alert(alert("MariaDBDown", "mysql.scielo.org", "restart_mariadb"))
+    result = await orchestrator.process_alert(
+        alert("MariaDBDown", "db-node-01.example.local", "restart_mariadb")
+    )
 
     assert result.status == "success"
     assert ("restart_mariadb", "mariadb") in ssh.calls
@@ -46,7 +48,7 @@ async def test_mariadb_down_restarts_only_mariadb_on_allowed_host(orchestrator_f
 async def test_unknown_alert_is_ignored_and_recorded(orchestrator_factory):
     orchestrator, ssh, _, _ = orchestrator_factory()
 
-    result = await orchestrator.process_alert(alert("SomethingElse", "mysql.scielo.org"))
+    result = await orchestrator.process_alert(alert("SomethingElse", "db-node-01.example.local"))
 
     assert result.status == "ignored"
     assert result.blocked_reason == "unknown alertname"
@@ -60,7 +62,9 @@ async def test_unknown_alert_is_ignored_and_recorded(orchestrator_factory):
 async def test_unauthorized_host_is_blocked(orchestrator_factory):
     orchestrator, ssh, _, _ = orchestrator_factory()
 
-    result = await orchestrator.process_alert(alert("ApacheDown", "mysql.scielo.org", "restart_apache"))
+    result = await orchestrator.process_alert(
+        alert("ApacheDown", "db-node-01.example.local", "restart_apache")
+    )
 
     assert result.status == "blocked"
     assert result.blocked_reason == "host is not allowed for this alert"
@@ -72,7 +76,7 @@ async def test_payload_cannot_swap_runbook_action(orchestrator_factory):
     orchestrator, ssh, _, _ = orchestrator_factory()
 
     result = await orchestrator.process_alert(
-        alert("ApacheDown", "node01-submission.scielo.org", "reboot_vm")
+        alert("ApacheDown", "app-node-01.example.local", "reboot_vm")
     )
 
     assert result.status == "blocked"
@@ -83,7 +87,7 @@ async def test_payload_cannot_swap_runbook_action(orchestrator_factory):
 @pytest.mark.asyncio
 async def test_restart_circuit_breaker_blocks_third_attempt(orchestrator_factory):
     orchestrator, ssh, _, _ = orchestrator_factory()
-    item = alert("MariaDBDown", "mysql.scielo.org", "restart_mariadb")
+    item = alert("MariaDBDown", "db-node-01.example.local", "restart_mariadb")
 
     assert (await orchestrator.process_alert(item)).status == "success"
     assert (await orchestrator.process_alert(item)).status == "success"
@@ -103,7 +107,7 @@ async def test_reboot_requires_all_preconditions(orchestrator_factory):
     orchestrator, _, _, proxmox = orchestrator_factory(ssh_available=True, http_success=False)
 
     result = await orchestrator.process_alert(
-        alert("HostUnreachable", "mysql.scielo.org", starts_at=starts_at)
+        alert("HostUnreachable", "db-node-01.example.local", starts_at=starts_at)
     )
 
     assert result.status == "blocked"
@@ -117,7 +121,7 @@ async def test_reboot_via_proxmox_only_when_preconditions_are_true(orchestrator_
     orchestrator, _, _, proxmox = orchestrator_factory(ssh_available=False, http_success=False)
 
     result = await orchestrator.process_alert(
-        alert("HostUnreachable", "node01-submission.scielo.org", starts_at=starts_at)
+        alert("HostUnreachable", "app-node-01.example.local", starts_at=starts_at)
     )
 
     assert result.status == "success"
@@ -128,7 +132,7 @@ async def test_reboot_via_proxmox_only_when_preconditions_are_true(orchestrator_
 async def test_reboot_circuit_breaker_blocks_second_attempt(orchestrator_factory):
     starts_at = datetime.now(UTC) - timedelta(minutes=10)
     orchestrator, _, _, proxmox = orchestrator_factory(ssh_available=False, http_success=False)
-    item = alert("HostUnreachable", "mysql.scielo.org", starts_at=starts_at)
+    item = alert("HostUnreachable", "db-node-01.example.local", starts_at=starts_at)
 
     assert (await orchestrator.process_alert(item)).status == "success"
     second = await orchestrator.process_alert(item)

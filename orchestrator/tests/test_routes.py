@@ -35,7 +35,7 @@ def test_alertmanager_endpoint_accepts_standard_payload():
                 {
                     "labels": {
                         "alertname": "ApacheDown",
-                        "instance": "node01-submission.scielo.org",
+                        "instance": "app-node-01.example.local",
                         "action": "restart_apache",
                     }
                 }

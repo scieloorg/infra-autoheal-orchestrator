@@ -2,21 +2,21 @@ groups:
   - name: infra-autoheal
     rules:
       - alert: ApacheDown
-        expr: probe_success{instance="node01-submission.scielo.org"} == 0
+        expr: probe_success{instance="app-node-01.example.local"} == 0
         for: 2m
         labels:
           severity: critical
           action: restart_apache
 
       - alert: MariaDBDown
-        expr: mysql_up{instance=~"mysql.scielo.org|node01-submission.scielo.org"} == 0
+        expr: mysql_up{instance=~"db-node-01.example.local|app-node-01.example.local"} == 0
         for: 2m
         labels:
           severity: critical
           action: restart_mariadb
 
       - alert: HostUnreachable
-        expr: up{job="node", instance=~"mysql.scielo.org|node01-submission.scielo.org"} == 0
+        expr: up{job="node", instance=~"db-node-01.example.local|app-node-01.example.local"} == 0
         for: 5m
         labels:
           severity: critical

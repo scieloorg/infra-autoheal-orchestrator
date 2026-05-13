@@ -94,15 +94,15 @@ class DisabledOpenSearch(OpenSearchIndexer):
 def hosts_config() -> HostsConfig:
     return HostsConfig(
         hosts={
-            "mysql.scielo.org": HostConfig(
+            "db-node-01.example.local": HostConfig(
                 ssh_user="rundeck",
                 services={"mariadb": "mariadb"},
                 proxmox=ProxmoxHostConfig(node="nodeXX", vmid=123),
             ),
-            "node01-submission.scielo.org": HostConfig(
+            "app-node-01.example.local": HostConfig(
                 ssh_user="rundeck",
                 services={"apache": "httpd", "mariadb": "mariadb"},
-                http_healthcheck="https://node01-submission.scielo.org/",
+                http_healthcheck="https://app-node-01.example.local/",
                 proxmox=ProxmoxHostConfig(node="nodeYY", vmid=456),
             ),
         }

@@ -1,5 +1,5 @@
 hosts:
-  mysql.scielo.org:
+  db-node-01.example.local:
     ssh_user: rundeck
     services:
       mariadb: mariadb
@@ -7,12 +7,12 @@ hosts:
       node: nodeXX
       vmid: 123
 
-  node01-submission.scielo.org:
+  app-node-01.example.local:
     ssh_user: rundeck
     services:
       apache: httpd
       mariadb: mariadb
-    http_healthcheck: "https://node01-submission.scielo.org/"
+    http_healthcheck: "https://app-node-01.example.local/"
     proxmox:
       node: nodeYY
       vmid: 456

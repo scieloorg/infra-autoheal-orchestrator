@@ -10,9 +10,9 @@ ALERT_ACTION_MAP: dict[str, ActionName] = {
 }
 
 ALERT_ALLOWED_HOSTS: dict[str, set[str]] = {
-    "ApacheDown": {"node01-submission.scielo.org"},
-    "MariaDBDown": {"mysql.scielo.org", "node01-submission.scielo.org"},
-    "HostUnreachable": {"mysql.scielo.org", "node01-submission.scielo.org"},
+    "ApacheDown": {"app-node-01.example.local"},
+    "MariaDBDown": {"db-node-01.example.local", "app-node-01.example.local"},
+    "HostUnreachable": {"db-node-01.example.local", "app-node-01.example.local"},
 }
 
 
