@@ -1,0 +1,13 @@
+limits:
+  restart_service:
+    max_attempts: 2
+    window_minutes: 15
+
+  reboot_vm:
+    max_attempts: 1
+    window_minutes: 60
+
+timeouts:
+  ssh_seconds: 10
+  command_seconds: 30
+  http_check_seconds: 10

@@ -1,0 +1,18 @@
+hosts:
+  mysql.scielo.org:
+    ssh_user: rundeck
+    services:
+      mariadb: mariadb
+    proxmox:
+      node: nodeXX
+      vmid: 123
+
+  node01-submission.scielo.org:
+    ssh_user: rundeck
+    services:
+      apache: httpd
+      mariadb: mariadb
+    http_healthcheck: "https://node01-submission.scielo.org/"
+    proxmox:
+      node: nodeYY
+      vmid: 456

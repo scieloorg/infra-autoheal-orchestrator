@@ -1,0 +1,31 @@
+services:
+  orchestrator:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      ORCH_HOSTS_CONFIG_PATH: /app/config/hosts.yaml
+      ORCH_POLICIES_CONFIG_PATH: /app/config/policies.yaml
+      ORCH_SQLITE_PATH: /app/data/orchestrator.sqlite3
+      ORCH_LOG_LEVEL: INFO
+      ORCH_WEBHOOK_TOKEN: change-this-long-random-token
+      ORCH_SSH__PRIVATE_KEY_PATH: /run/secrets/ssh_autoheal_key
+      ORCH_SSH__KNOWN_HOSTS_PATH: /app/config/known_hosts
+      ORCH_SSH__PASSWORD_AUTH: "false"
+      # Configure before enabling reboot_vm in production:
+      # ORCH_PROXMOX__BASE_URL: https://proxmox.example.org:8006
+      # ORCH_PROXMOX__TOKEN_ID: user@pam!token
+      # ORCH_PROXMOX__TOKEN_SECRET: change-me
+      # ORCH_PROXMOX__VERIFY_TLS: "true"
+    volumes:
+      - ./config:/app/config:ro
+      - orchestrator-data:/app/data
+    secrets:
+      - ssh_autoheal_key
+
+volumes:
+  orchestrator-data:
+
+secrets:
+  ssh_autoheal_key:
+    file: ~/.ssh/infra_autoheal_ed25519
