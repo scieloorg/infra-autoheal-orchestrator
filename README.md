@@ -230,6 +230,7 @@ Este repositório versiona uma skill do Codex em:
 .codex/skills/db-permission-auditor
 .codex/skills/secure-sdlc
 .codex/skills/audit-log-generator
+.codex/skills/crypto-standards
 ```
 
 Para instalar em outra máquina:
@@ -240,6 +241,7 @@ cp -R .codex/skills/infra-autoheal-orchestrator ~/.codex/skills/
 cp -R .codex/skills/db-permission-auditor ~/.codex/skills/
 cp -R .codex/skills/secure-sdlc ~/.codex/skills/
 cp -R .codex/skills/audit-log-generator ~/.codex/skills/
+cp -R .codex/skills/crypto-standards ~/.codex/skills/
 ```
 
 Depois, em uma nova sessão do Codex:
@@ -261,6 +263,10 @@ fase do ciclo de desenvolvimento, como requisitos, testes, deploy e GMUD.
 A skill `audit-log-generator` deve ser usada para instrumentar ou revisar logs
 de auditoria em endpoints, autenticação, operações CRUD, jobs e acessos restritos,
 sem registrar segredos ou dados sensíveis.
+
+A skill `crypto-standards` deve ser usada para escolher ou revisar algoritmos de
+hash, criptografia, TLS, JWT, tokens, assinaturas digitais e chaves, bloqueando
+algoritmos obsoletos como MD5, SHA1, DES, 3DES, RC4 e ECB.
 
 ## Exemplos
 
