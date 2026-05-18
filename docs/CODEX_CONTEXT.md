@@ -14,6 +14,7 @@ Python 3.12+ FastAPI service for safe infrastructure auto-healing from Alertmana
 
 ## Non-Negotiable Safety Rules
 
+- Follow the secure development context summarized in `docs/SECURE_DEVELOPMENT_CONTEXT.md`.
 - Never run arbitrary commands from alert payloads.
 - Keep actions allowlisted: `restart_apache`, `restart_mariadb`, `collect_evidence`, `reboot_vm`.
 - Require `ORCH_WEBHOOK_TOKEN` for `POST /webhook/alertmanager`.
@@ -39,6 +40,7 @@ Python 3.12+ FastAPI service for safe infrastructure auto-healing from Alertmana
 - `orchestrator/config/policies.yaml`: limits/timeouts.
 - `docker-compose.yml`: root compose.
 - `.env.example`: compose env template.
+- `docs/SECURE_DEVELOPMENT_CONTEXT.md`: secure development guardrails for future sessions.
 
 ## Generic Host Names
 

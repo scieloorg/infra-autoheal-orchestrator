@@ -244,6 +244,8 @@ Use a skill infra-autoheal-orchestrator para trabalhar neste projeto.
 
 Também há um contexto curto em `docs/CODEX_CONTEXT.md` para sessões sem instalação da skill.
 
+O contexto de desenvolvimento seguro fica em `docs/SECURE_DEVELOPMENT_CONTEXT.md` e também é referenciado pela skill versionada.
+
 ## Exemplos
 
 - `examples/alertmanager.yml`

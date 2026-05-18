@@ -17,10 +17,13 @@ If the repo has moved, locate it by searching for `orchestrator/app/main.py` and
 
 Read `references/project-context.md` when you need project-specific architecture, safety invariants, test commands, Docker notes, or known operational details.
 
+Read `references/secure-development-context.md` before making security-sensitive changes, especially authentication, authorization, logging, persistence, deployment, dependency, or infrastructure automation changes.
+
 ## Operating Rules
 
 Preserve these invariants unless the user explicitly asks to change the security model:
 
+- Follow the secure development context summarized from SciELO/FapUNIFESP NSI.04.
 - Never execute arbitrary commands from Alertmanager payloads.
 - Keep action dispatch allowlisted: `restart_apache`, `restart_mariadb`, `collect_evidence`, `reboot_vm`.
 - Keep remote commands defined in code, not in alert payloads.
@@ -80,3 +83,4 @@ If SQLite startup fails with `unable to open database file`, check `/app/data` v
 ## References
 
 - `references/project-context.md`: concise project memory and architecture map.
+- `references/secure-development-context.md`: secure development guardrails summarized from the provided SciELO/FapUNIFESP context.
