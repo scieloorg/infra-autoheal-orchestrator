@@ -229,6 +229,7 @@ Este repositório versiona uma skill do Codex em:
 .codex/skills/infra-autoheal-orchestrator
 .codex/skills/db-permission-auditor
 .codex/skills/secure-sdlc
+.codex/skills/audit-log-generator
 ```
 
 Para instalar em outra máquina:
@@ -238,6 +239,7 @@ mkdir -p ~/.codex/skills
 cp -R .codex/skills/infra-autoheal-orchestrator ~/.codex/skills/
 cp -R .codex/skills/db-permission-auditor ~/.codex/skills/
 cp -R .codex/skills/secure-sdlc ~/.codex/skills/
+cp -R .codex/skills/audit-log-generator ~/.codex/skills/
 ```
 
 Depois, em uma nova sessão do Codex:
@@ -255,6 +257,10 @@ GRANTs, strings de conexão e configurações de banco conforme menor privilégi
 
 A skill `secure-sdlc` deve ser usada para checklists e artefatos de segurança por
 fase do ciclo de desenvolvimento, como requisitos, testes, deploy e GMUD.
+
+A skill `audit-log-generator` deve ser usada para instrumentar ou revisar logs
+de auditoria em endpoints, autenticação, operações CRUD, jobs e acessos restritos,
+sem registrar segredos ou dados sensíveis.
 
 ## Exemplos
 
