@@ -73,6 +73,10 @@ class SSHCommandError(ValueError):
     pass
 
 
+class SSHConfigurationError(ValueError):
+    pass
+
+
 class SSHExecutor:
     def __init__(
         self,
@@ -148,7 +152,9 @@ class SSHExecutor:
 
     def _known_hosts(self, host_known_hosts_path: Path | None) -> str | None:
         known_hosts_path = host_known_hosts_path or self.settings.known_hosts_path
-        return str(known_hosts_path) if known_hosts_path else None
+        if known_hosts_path is None:
+            raise SSHConfigurationError("known_hosts_path is required for SSH host key verification")
+        return str(known_hosts_path)
 
 
 def render_allowed_command(command_key: str, *, service: str | None = None) -> str:

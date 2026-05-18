@@ -6,11 +6,28 @@ import pytest
 
 from app.models import AlertItem, AlertLabels
 
+REBOOT_CONFIRMATIONS = {
+    "node_exporter_down": "true",
+    "blackbox_unavailable": "true",
+}
 
-def alert(alertname: str, instance: str, action: str | None = None, *, starts_at=None) -> AlertItem:
+
+def alert(
+    alertname: str,
+    instance: str,
+    action: str | None = None,
+    *,
+    starts_at=None,
+    annotations: dict | None = None,
+    labels: dict | None = None,
+) -> AlertItem:
+    label_data = {"alertname": alertname, "instance": instance, "action": action}
+    if labels:
+        label_data.update(labels)
     return AlertItem(
-        labels=AlertLabels(alertname=alertname, instance=instance, action=action),
+        labels=AlertLabels.model_validate(label_data),
         startsAt=starts_at,
+        annotations=annotations or {},
     )
 
 
@@ -121,7 +138,12 @@ async def test_reboot_via_proxmox_only_when_preconditions_are_true(orchestrator_
     orchestrator, _, _, proxmox = orchestrator_factory(ssh_available=False, http_success=False)
 
     result = await orchestrator.process_alert(
-        alert("HostUnreachable", "app-node-01.example.local", starts_at=starts_at)
+        alert(
+            "HostUnreachable",
+            "app-node-01.example.local",
+            starts_at=starts_at,
+            annotations=REBOOT_CONFIRMATIONS,
+        )
     )
 
     assert result.status == "success"
@@ -132,11 +154,39 @@ async def test_reboot_via_proxmox_only_when_preconditions_are_true(orchestrator_
 async def test_reboot_circuit_breaker_blocks_second_attempt(orchestrator_factory):
     starts_at = datetime.now(UTC) - timedelta(minutes=10)
     orchestrator, _, _, proxmox = orchestrator_factory(ssh_available=False, http_success=False)
-    item = alert("HostUnreachable", "db-node-01.example.local", starts_at=starts_at)
+    item = alert(
+        "HostUnreachable",
+        "db-node-01.example.local",
+        starts_at=starts_at,
+        annotations=REBOOT_CONFIRMATIONS,
+    )
 
     assert (await orchestrator.process_alert(item)).status == "success"
     second = await orchestrator.process_alert(item)
 
     assert second.status == "blocked"
     assert "circuit breaker open" in (second.blocked_reason or "")
+    assert proxmox.reboots == [("nodeXX", 123)]
+
+
+@pytest.mark.asyncio
+async def test_reboot_precondition_failure_does_not_consume_circuit_breaker(orchestrator_factory):
+    starts_at = datetime.now(UTC) - timedelta(minutes=10)
+    orchestrator, _, _, proxmox = orchestrator_factory(ssh_available=False, http_success=False)
+
+    first = await orchestrator.process_alert(
+        alert("HostUnreachable", "db-node-01.example.local", starts_at=starts_at)
+    )
+    second = await orchestrator.process_alert(
+        alert(
+            "HostUnreachable",
+            "db-node-01.example.local",
+            starts_at=starts_at,
+            annotations=REBOOT_CONFIRMATIONS,
+        )
+    )
+
+    assert first.status == "blocked"
+    assert first.blocked_reason == "reboot preconditions failed"
+    assert second.status == "success"
     assert proxmox.reboots == [("nodeXX", 123)]

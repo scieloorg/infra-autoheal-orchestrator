@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from app.actions.ssh import SSHCommandError, render_allowed_command
+from app.actions.ssh import SSHCommandError, SSHConfigurationError, SSHExecutor, render_allowed_command
 
 
 def test_render_allowed_command_uses_local_service_name_only():
@@ -12,3 +12,10 @@ def test_render_allowed_command_uses_local_service_name_only():
 def test_unknown_command_key_is_rejected():
     with pytest.raises(SSHCommandError):
         render_allowed_command("rm_everything")
+
+
+def test_ssh_requires_known_hosts_for_host_key_verification():
+    executor = SSHExecutor()
+
+    with pytest.raises(SSHConfigurationError):
+        executor._known_hosts(None)

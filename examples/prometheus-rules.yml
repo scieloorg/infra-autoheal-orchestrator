@@ -16,8 +16,13 @@ groups:
           action: restart_mariadb
 
       - alert: HostUnreachable
-        expr: up{job="node", instance=~"db-node-01.example.local|app-node-01.example.local"} == 0
+        expr: |
+          (up{job="node", instance=~"db-node-01.example.local|app-node-01.example.local"} == 0)
+          and on(instance)
+          (probe_success{instance=~"db-node-01.example.local|app-node-01.example.local"} == 0)
         for: 5m
         labels:
           severity: critical
           action: reboot_vm
+          node_exporter_down: "true"
+          blackbox_unavailable: "true"

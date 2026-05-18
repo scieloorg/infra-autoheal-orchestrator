@@ -8,8 +8,17 @@ import httpx
 from app.actions.evidence import collect_linux_evidence
 from app.actions.ssh import SSHExecutor
 from app.config import HostConfig, ProxmoxSettings
-from app.models import ActionDecision, ActionExecution, ValidationResult
+from app.models import ActionDecision, ActionExecution, AlertItem, ValidationResult
 from app.validators.http_check import HTTPValidator
+
+TRUTHY_ALERT_VALUES = {"1", "true", "yes", "y", "on", "down", "unavailable", "firing"}
+NODE_EXPORTER_CONFIRMATION_KEYS = ("node_exporter_down", "node_exporter_unavailable")
+BLACKBOX_CONFIRMATION_KEYS = (
+    "blackbox_unavailable",
+    "blackbox_down",
+    "blackbox_http_down",
+    "blackbox_tcp_down",
+)
 
 
 class ProxmoxClient:
@@ -40,9 +49,10 @@ class RebootPreconditionChecker:
         *,
         decision: ActionDecision,
         host_config: HostConfig,
-        alert_starts_at: datetime | None,
+        alert: AlertItem,
     ) -> tuple[bool, dict[str, Any]]:
         now = datetime.now(UTC)
+        alert_starts_at = alert.startsAt
         if alert_starts_at is None:
             active_for_seconds = 0.0
         else:
@@ -63,13 +73,19 @@ class RebootPreconditionChecker:
             http_available = http_result.success
             http_detail = http_result.detail
 
+        node_exporter_confirmed = _alert_has_truthy_marker(alert, NODE_EXPORTER_CONFIRMATION_KEYS)
+        blackbox_confirmed = _alert_has_truthy_marker(alert, BLACKBOX_CONFIRMATION_KEYS)
         details = {
             "alert_active_for_seconds": active_for_seconds,
             "alert_minimum_seconds": int(timedelta(minutes=5).total_seconds()),
-            "node_exporter_down": True,
+            "node_exporter_down": node_exporter_confirmed,
             "ssh_unavailable": not ssh_available,
-            "blackbox_unavailable": not http_available,
+            "blackbox_unavailable": blackbox_confirmed and not http_available,
             "blackbox_detail": http_detail,
+            "required_alert_markers": {
+                "node_exporter": NODE_EXPORTER_CONFIRMATION_KEYS,
+                "blackbox": BLACKBOX_CONFIRMATION_KEYS,
+            },
         }
         allowed = (
             active_for_seconds >= timedelta(minutes=5).total_seconds()
@@ -117,3 +133,19 @@ async def reboot_vm(
         evidence=evidence,
         proxmox_response=response,
     )
+
+
+def _alert_has_truthy_marker(alert: AlertItem, keys: tuple[str, ...]) -> bool:
+    sources: list[dict[str, Any]] = [alert.annotations]
+    if alert.labels.model_extra:
+        sources.append(alert.labels.model_extra)
+
+    for source in sources:
+        for key in keys:
+            value = source.get(key)
+            if isinstance(value, bool):
+                if value:
+                    return True
+            elif value is not None and str(value).strip().lower() in TRUTHY_ALERT_VALUES:
+                return True
+    return False

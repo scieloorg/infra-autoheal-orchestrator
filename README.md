@@ -181,6 +181,8 @@ A ação `reboot_vm` só roda quando:
 
 - alerta `HostUnreachable` está ativo por pelo menos 5 minutos
 - host está mapeado em `hosts.yaml`
+- alerta traz confirmação explícita `node_exporter_down=true`
+- alerta traz confirmação explícita `blackbox_unavailable=true`
 - SSH está indisponível
 - blackbox HTTP/TCP está indisponível
 - circuit breaker permite a ação

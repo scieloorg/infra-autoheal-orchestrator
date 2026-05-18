@@ -82,12 +82,13 @@ class Orchestrator:
             self._record(execution)
             return execution
 
-        self.circuit_breaker.record(
-            host=decision.host,
-            action=decision.action,
-            target=target,
-            correlation_id=decision.correlation_id,
-        )
+        if decision.action != ActionName.REBOOT_VM:
+            self.circuit_breaker.record(
+                host=decision.host,
+                action=decision.action,
+                target=target,
+                correlation_id=decision.correlation_id,
+            )
 
         if decision.action == ActionName.RESTART_APACHE:
             execution = await restart_apache(
@@ -119,8 +120,15 @@ class Orchestrator:
             preconditions = await precondition_checker.check(
                 decision=decision,
                 host_config=host_config,
-                alert_starts_at=alert.startsAt,
+                alert=alert,
             )
+            if preconditions[0]:
+                self.circuit_breaker.record(
+                    host=decision.host,
+                    action=decision.action,
+                    target=target,
+                    correlation_id=decision.correlation_id,
+                )
             execution = await reboot_vm(
                 decision=decision,
                 host_config=host_config,
