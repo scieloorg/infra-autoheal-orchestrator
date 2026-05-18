@@ -228,6 +228,7 @@ Este repositório versiona uma skill do Codex em:
 ```text
 .codex/skills/infra-autoheal-orchestrator
 .codex/skills/db-permission-auditor
+.codex/skills/secure-sdlc
 ```
 
 Para instalar em outra máquina:
@@ -236,6 +237,7 @@ Para instalar em outra máquina:
 mkdir -p ~/.codex/skills
 cp -R .codex/skills/infra-autoheal-orchestrator ~/.codex/skills/
 cp -R .codex/skills/db-permission-auditor ~/.codex/skills/
+cp -R .codex/skills/secure-sdlc ~/.codex/skills/
 ```
 
 Depois, em uma nova sessão do Codex:
@@ -250,6 +252,9 @@ O contexto de desenvolvimento seguro fica em `docs/SECURE_DEVELOPMENT_CONTEXT.md
 
 A skill `db-permission-auditor` deve ser usada para revisar usuários, permissões,
 GRANTs, strings de conexão e configurações de banco conforme menor privilégio.
+
+A skill `secure-sdlc` deve ser usada para checklists e artefatos de segurança por
+fase do ciclo de desenvolvimento, como requisitos, testes, deploy e GMUD.
 
 ## Exemplos
 
