@@ -232,6 +232,7 @@ Este repositório versiona uma skill do Codex em:
 .codex/skills/audit-log-generator
 .codex/skills/crypto-standards
 .codex/skills/secret-detection
+.codex/skills/secure-code-review
 ```
 
 Para instalar em outra máquina:
@@ -244,6 +245,7 @@ cp -R .codex/skills/secure-sdlc ~/.codex/skills/
 cp -R .codex/skills/audit-log-generator ~/.codex/skills/
 cp -R .codex/skills/crypto-standards ~/.codex/skills/
 cp -R .codex/skills/secret-detection ~/.codex/skills/
+cp -R .codex/skills/secure-code-review ~/.codex/skills/
 ```
 
 Depois, em uma nova sessão do Codex:
@@ -273,6 +275,10 @@ algoritmos obsoletos como MD5, SHA1, DES, 3DES, RC4 e ECB.
 A skill `secret-detection` deve ser usada antes de commits, push, PRs e revisões
 para detectar segredos, credenciais, tokens, chaves privadas, `.env` versionado e
 configurações inseguras.
+
+A skill `secure-code-review` deve ser usada para revisão de segurança de código,
+features, PRs e diffs, cobrindo injeção, autenticação, XSS, controle de acesso,
+validação de entrada, criptografia, configuração e logging inseguro.
 
 ## Exemplos
 
