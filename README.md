@@ -227,6 +227,7 @@ Este repositório versiona uma skill do Codex em:
 
 ```text
 .codex/skills/infra-autoheal-orchestrator
+.codex/skills/db-permission-auditor
 ```
 
 Para instalar em outra máquina:
@@ -234,6 +235,7 @@ Para instalar em outra máquina:
 ```bash
 mkdir -p ~/.codex/skills
 cp -R .codex/skills/infra-autoheal-orchestrator ~/.codex/skills/
+cp -R .codex/skills/db-permission-auditor ~/.codex/skills/
 ```
 
 Depois, em uma nova sessão do Codex:
@@ -245,6 +247,9 @@ Use a skill infra-autoheal-orchestrator para trabalhar neste projeto.
 Também há um contexto curto em `docs/CODEX_CONTEXT.md` para sessões sem instalação da skill.
 
 O contexto de desenvolvimento seguro fica em `docs/SECURE_DEVELOPMENT_CONTEXT.md` e também é referenciado pela skill versionada.
+
+A skill `db-permission-auditor` deve ser usada para revisar usuários, permissões,
+GRANTs, strings de conexão e configurações de banco conforme menor privilégio.
 
 ## Exemplos
 
