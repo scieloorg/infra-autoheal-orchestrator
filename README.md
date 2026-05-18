@@ -221,6 +221,29 @@ pytest
 
 Os testes usam fakes para SSH, HTTP e Proxmox e cobrem os critérios de aceite principais.
 
+## Reuso com Codex
+
+Este repositório versiona uma skill do Codex em:
+
+```text
+.codex/skills/infra-autoheal-orchestrator
+```
+
+Para instalar em outra máquina:
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R .codex/skills/infra-autoheal-orchestrator ~/.codex/skills/
+```
+
+Depois, em uma nova sessão do Codex:
+
+```text
+Use a skill infra-autoheal-orchestrator para trabalhar neste projeto.
+```
+
+Também há um contexto curto em `docs/CODEX_CONTEXT.md` para sessões sem instalação da skill.
+
 ## Exemplos
 
 - `examples/alertmanager.yml`
