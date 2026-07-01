@@ -3,7 +3,7 @@ name: Master Quality
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   sonar:
