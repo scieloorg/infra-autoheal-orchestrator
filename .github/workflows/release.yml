@@ -27,6 +27,7 @@ jobs:
       - name: Build image
         run: |
           docker build \
+            -f orchestrator/Dockerfile \
             -t infrascielo/infra-autoheal-orchestrator:${VERSION} \
             -t infrascielo/infra-autoheal-orchestrator:latest \
             .
