@@ -1,7 +1,8 @@
 services:
   orchestrator:
     build:
-      context: ./orchestrator
+      context: .
+      dockerfile: orchestrator/Dockerfile
     image: infra-autoheal-orchestrator:local
     ports:
       - "${ORCH_PORT:-8000}:8000"

@@ -6,11 +6,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-COPY pyproject.toml /app/
+COPY orchestrator/pyproject.toml /app/
 RUN pip install --upgrade pip && pip install ".[dev]"
 
-COPY app /app/app
-COPY config /app/config
+COPY orchestrator/app /app/app
+COPY orchestrator/config /app/config
 
 RUN adduser --disabled-password --gecos "" orchestrator \
     && mkdir -p /app/data \
