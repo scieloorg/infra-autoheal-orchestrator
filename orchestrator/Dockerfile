@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm
+FROM python:3.12-alpine3.24
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -12,7 +12,8 @@ RUN pip install --upgrade pip && pip install "."
 COPY orchestrator/app /app/app
 COPY orchestrator/config /app/config
 
-RUN adduser --disabled-password --gecos "" orchestrator \
+RUN addgroup -S orchestrator \
+    && adduser -S -G orchestrator orchestrator \
     && mkdir -p /app/data \
     && chown -R orchestrator:orchestrator /app/data
 USER orchestrator
