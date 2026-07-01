@@ -1,18 +1,18 @@
 hosts:
-  db-node-01.example.local:
+  mysql.scielo.org:
     ssh_user: rundeck
     services:
       mariadb: mariadb
     proxmox:
-      node: nodeXX
-      vmid: 123
+      node: mysql.scielo.org
+      vmid: 157
 
-  app-node-01.example.local:
+  node01-submission.scielo.org:
     ssh_user: rundeck
     services:
       apache: httpd
       mariadb: mariadb
-    http_healthcheck: "https://app-node-01.example.local/"
+    http_healthcheck: "https://preprints.scielo.org/"
     proxmox:
-      node: nodeYY
-      vmid: 456
+      node: node01-submission.scielo.org
+      vmid: 124
