@@ -63,6 +63,21 @@ async def test_mariadb_down_restarts_only_mariadb_on_allowed_host(orchestrator_f
 
 
 @pytest.mark.asyncio
+async def test_mysql_down_alias_restarts_mariadb_and_strips_exporter_port(orchestrator_factory):
+    orchestrator, ssh, _, _ = orchestrator_factory()
+
+    result = await orchestrator.process_alert(
+        alert("MySQLDown", "db-node-01.example.local:9104", "restart_mariadb")
+    )
+
+    assert result.status == "success"
+    assert result.decision.host == "db-node-01.example.local"
+    assert result.decision.action == "restart_mariadb"
+    assert ("restart_mariadb", "mariadb") in ssh.calls
+    assert ("restart_apache", "httpd") not in ssh.calls
+
+
+@pytest.mark.asyncio
 async def test_mariadb_down_allows_any_configured_host_with_mariadb_service(
     orchestrator_factory,
 ):
