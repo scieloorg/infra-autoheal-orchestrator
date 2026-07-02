@@ -124,6 +124,7 @@ def policies() -> PoliciesConfig:
 def orchestrator_factory(tmp_path: Path, hosts_config: HostsConfig, policies: PoliciesConfig):
     def build(
         *,
+        hosts_config: HostsConfig = hosts_config,
         ssh_available: bool = True,
         http_success: bool = True,
         mysql_success: bool = True,

@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
+from app.config import HostConfig, HostsConfig, ProxmoxHostConfig
 from app.models import AlertItem, AlertLabels
 
 REBOOT_CONFIRMATIONS = {
@@ -62,6 +63,31 @@ async def test_mariadb_down_restarts_only_mariadb_on_allowed_host(orchestrator_f
 
 
 @pytest.mark.asyncio
+async def test_mariadb_down_allows_any_configured_host_with_mariadb_service(
+    orchestrator_factory,
+):
+    hosts_config = HostsConfig(
+        hosts={
+            "app-node-02.example.local": HostConfig(
+                ssh_user="rundeck",
+                services={"apache": "httpd", "mariadb": "mariadb"},
+                http_healthcheck="https://app-node-02.example.local/",
+                proxmox=ProxmoxHostConfig(node="nodeZZ", vmid=131),
+            )
+        }
+    )
+    orchestrator, ssh, _, _ = orchestrator_factory(hosts_config=hosts_config)
+
+    result = await orchestrator.process_alert(
+        alert("MariaDBDown", "app-node-02.example.local", "restart_mariadb")
+    )
+
+    assert result.status == "success"
+    assert ("restart_mariadb", "mariadb") in ssh.calls
+    assert ("restart_apache", "httpd") not in ssh.calls
+
+
+@pytest.mark.asyncio
 async def test_unknown_alert_is_ignored_and_recorded(orchestrator_factory):
     orchestrator, ssh, _, _ = orchestrator_factory()
 
@@ -84,7 +110,7 @@ async def test_unauthorized_host_is_blocked(orchestrator_factory):
     )
 
     assert result.status == "blocked"
-    assert result.blocked_reason == "host is not allowed for this alert"
+    assert result.blocked_reason == "host is not allowed for this alert: apache service is not configured"
     assert ssh.calls == []
 
 
