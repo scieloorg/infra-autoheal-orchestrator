@@ -32,11 +32,21 @@ class MySQLValidator:
             private_key_path=private_key_path,
             known_hosts_path=known_hosts_path,
         )
+        success, detail = _mysqladmin_availability(result)
         return MySQLValidationBundle(
             result=ValidationResult(
                 name="mysqladmin_ping",
-                success=result.exit_code == 0 and "alive" in result.stdout.lower(),
-                detail=f"exit_code={result.exit_code}",
+                success=success,
+                detail=detail,
             ),
             commands=[result],
         )
+
+
+def _mysqladmin_availability(result: CommandResult) -> tuple[bool, str]:
+    output = f"{result.stdout}\n{result.stderr}".lower()
+    if "mysqld is alive" in output:
+        return True, f"exit_code={result.exit_code}; server is alive"
+    if "access denied" in output:
+        return True, f"exit_code={result.exit_code}; server rejected authentication"
+    return False, f"exit_code={result.exit_code}"

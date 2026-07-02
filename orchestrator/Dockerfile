@@ -12,8 +12,8 @@ RUN pip install --upgrade pip && pip install "."
 COPY orchestrator/app /app/app
 COPY orchestrator/config /app/config
 
-RUN addgroup -S orchestrator \
-    && adduser -S -G orchestrator orchestrator \
+RUN addgroup -S -g 1000 orchestrator \
+    && adduser -S -u 1000 -G orchestrator orchestrator \
     && mkdir -p /app/data \
     && chown -R orchestrator:orchestrator /app/data
 USER orchestrator

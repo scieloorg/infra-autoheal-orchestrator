@@ -23,7 +23,11 @@ services:
       - ./orchestrator/config:/app/config:ro
       - orchestrator-data:/app/data
     secrets:
-      - ssh_autoheal_key
+      - source: ssh_autoheal_key
+        target: ssh_autoheal_key
+        uid: "1000"
+        gid: "1000"
+        mode: 0400
     restart: unless-stopped
 
 volumes:
