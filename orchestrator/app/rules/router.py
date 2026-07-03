@@ -8,6 +8,7 @@ ALERT_ACTION_MAP: dict[str, ActionName] = {
     "MariaDBDown": ActionName.RESTART_MARIADB,
     "MySQLDown": ActionName.RESTART_MARIADB,
     "HostUnreachable": ActionName.REBOOT_VM,
+    "LinuxNodeDown": ActionName.REBOOT_VM,
 }
 
 

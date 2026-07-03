@@ -210,6 +210,28 @@ async def test_reboot_via_proxmox_only_when_preconditions_are_true(orchestrator_
 
 
 @pytest.mark.asyncio
+async def test_linux_node_down_alias_reboots_via_proxmox_when_preconditions_are_true(
+    orchestrator_factory,
+):
+    starts_at = datetime.now(UTC) - timedelta(minutes=10)
+    orchestrator, _, _, proxmox = orchestrator_factory(ssh_available=False, http_success=False)
+
+    result = await orchestrator.process_alert(
+        alert(
+            "LinuxNodeDown",
+            "db-node-01.example.local:9100",
+            starts_at=starts_at,
+            annotations=REBOOT_CONFIRMATIONS,
+        )
+    )
+
+    assert result.status == "success"
+    assert result.decision.host == "db-node-01.example.local"
+    assert result.decision.action == "reboot_vm"
+    assert proxmox.reboots == [("nodeXX", 123)]
+
+
+@pytest.mark.asyncio
 async def test_reboot_circuit_breaker_blocks_second_attempt(orchestrator_factory):
     starts_at = datetime.now(UTC) - timedelta(minutes=10)
     orchestrator, _, _, proxmox = orchestrator_factory(ssh_available=False, http_success=False)
