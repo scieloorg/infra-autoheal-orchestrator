@@ -40,9 +40,14 @@ class TimeoutConfig(BaseModel):
     http_check_seconds: int = 10
 
 
+class RebootPreconditionConfig(BaseModel):
+    min_alert_age_minutes: int = 5
+
+
 class PoliciesConfig(BaseModel):
     limits: dict[str, LimitConfig]
     timeouts: TimeoutConfig = Field(default_factory=TimeoutConfig)
+    reboot_preconditions: RebootPreconditionConfig = Field(default_factory=RebootPreconditionConfig)
 
 
 class ProxmoxSettings(BaseModel):

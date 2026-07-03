@@ -11,3 +11,6 @@ timeouts:
   ssh_seconds: 10
   command_seconds: 30
   http_check_seconds: 10
+
+reboot_preconditions:
+  min_alert_age_minutes: 5

@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from app.config import HostConfig, HostsConfig, ProxmoxHostConfig
+from app.config import HostConfig, HostsConfig, PoliciesConfig, ProxmoxHostConfig, RebootPreconditionConfig
 from app.models import AlertItem, AlertLabels
 
 REBOOT_CONFIRMATIONS = {
@@ -189,6 +189,35 @@ async def test_reboot_requires_all_preconditions(orchestrator_factory):
     assert result.status == "blocked"
     assert result.blocked_reason == "reboot preconditions failed"
     assert proxmox.reboots == []
+
+
+@pytest.mark.asyncio
+async def test_reboot_minimum_alert_age_uses_policies(orchestrator_factory, policies):
+    policies = PoliciesConfig(
+        limits=policies.limits,
+        timeouts=policies.timeouts,
+        reboot_preconditions=RebootPreconditionConfig(min_alert_age_minutes=1),
+    )
+    starts_at = datetime.now(UTC) - timedelta(minutes=2)
+    orchestrator, _, _, proxmox = orchestrator_factory(
+        policies=policies,
+        ssh_available=False,
+        http_success=False,
+    )
+
+    result = await orchestrator.process_alert(
+        alert(
+            "HostUnreachable",
+            "db-node-01.example.local",
+            starts_at=starts_at,
+            annotations=REBOOT_CONFIRMATIONS,
+        )
+    )
+
+    assert result.status == "success"
+    assert result.validation is not None
+    assert "'alert_minimum_seconds': 60" in result.validation.detail
+    assert proxmox.reboots == [("nodeXX", 123)]
 
 
 @pytest.mark.asyncio

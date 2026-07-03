@@ -92,6 +92,22 @@ Hosts: `orchestrator/config/hosts.yaml`
 
 Políticas: `orchestrator/config/policies.yaml`
 
+Exemplo:
+
+```yaml
+limits:
+  restart_service:
+    max_attempts: 2
+    window_minutes: 15
+
+  reboot_vm:
+    max_attempts: 1
+    window_minutes: 60
+
+reboot_preconditions:
+  min_alert_age_minutes: 5
+```
+
 Variáveis úteis:
 
 - `ORCH_HOSTS_CONFIG_PATH`
@@ -179,7 +195,7 @@ caso use outro nome.
 
 A ação `reboot_vm` só roda quando:
 
-- alerta `HostUnreachable` está ativo por pelo menos 5 minutos
+- alerta `HostUnreachable` ou alias equivalente está ativo pelo tempo configurado em `reboot_preconditions.min_alert_age_minutes`
 - host está mapeado em `hosts.yaml`
 - alerta traz confirmação explícita `node_exporter_down=true`
 - alerta traz confirmação explícita `blackbox_unavailable=true`
@@ -187,7 +203,7 @@ A ação `reboot_vm` só roda quando:
 - blackbox HTTP/TCP está indisponível
 - circuit breaker permite a ação
 
-O limite padrão é 1 reboot por VM em 60 minutos.
+O limite padrão é 1 reboot por VM em 60 minutos. O tempo mínimo padrão do alerta antes de reboot é 5 minutos.
 
 ## Auditoria
 

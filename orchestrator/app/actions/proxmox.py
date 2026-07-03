@@ -7,7 +7,7 @@ import httpx
 
 from app.actions.evidence import collect_linux_evidence
 from app.actions.ssh import SSHExecutor
-from app.config import HostConfig, ProxmoxSettings
+from app.config import HostConfig, PoliciesConfig, ProxmoxSettings
 from app.models import ActionDecision, ActionExecution, AlertItem, ValidationResult
 from app.validators.http_check import HTTPValidator
 
@@ -40,9 +40,10 @@ class ProxmoxClient:
 
 
 class RebootPreconditionChecker:
-    def __init__(self, *, ssh: SSHExecutor, http_validator: HTTPValidator) -> None:
+    def __init__(self, *, ssh: SSHExecutor, http_validator: HTTPValidator, policies: PoliciesConfig) -> None:
         self.ssh = ssh
         self.http_validator = http_validator
+        self.policies = policies
 
     async def check(
         self,
@@ -75,9 +76,12 @@ class RebootPreconditionChecker:
 
         node_exporter_confirmed = _alert_has_truthy_marker(alert, NODE_EXPORTER_CONFIRMATION_KEYS)
         blackbox_confirmed = _alert_has_truthy_marker(alert, BLACKBOX_CONFIRMATION_KEYS)
+        minimum_seconds = int(
+            timedelta(minutes=self.policies.reboot_preconditions.min_alert_age_minutes).total_seconds()
+        )
         details = {
             "alert_active_for_seconds": active_for_seconds,
-            "alert_minimum_seconds": int(timedelta(minutes=5).total_seconds()),
+            "alert_minimum_seconds": minimum_seconds,
             "node_exporter_down": node_exporter_confirmed,
             "ssh_unavailable": not ssh_available,
             "blackbox_unavailable": blackbox_confirmed and not http_available,
@@ -88,7 +92,7 @@ class RebootPreconditionChecker:
             },
         }
         allowed = (
-            active_for_seconds >= timedelta(minutes=5).total_seconds()
+            active_for_seconds >= minimum_seconds
             and details["node_exporter_down"]
             and details["ssh_unavailable"]
             and details["blackbox_unavailable"]

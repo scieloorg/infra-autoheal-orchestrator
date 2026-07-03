@@ -127,7 +127,11 @@ class Orchestrator:
                 evidence=evidence,
             )
         elif decision.action == ActionName.REBOOT_VM:
-            precondition_checker = RebootPreconditionChecker(ssh=self.ssh, http_validator=self.http_validator)
+            precondition_checker = RebootPreconditionChecker(
+                ssh=self.ssh,
+                http_validator=self.http_validator,
+                policies=self.policies,
+            )
             preconditions = await precondition_checker.check(
                 decision=decision,
                 host_config=host_config,
