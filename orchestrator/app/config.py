@@ -57,6 +57,9 @@ class OpenSearchSettings(BaseModel):
     hosts: list[str] = Field(default_factory=list)
     username: str | None = None
     password: str | None = None
+    verify_certs: bool = True
+    index_prefix: str = "infra-incidents"
+    max_field_length: int = 8192
 
 
 class SSHSettings(BaseModel):

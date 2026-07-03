@@ -214,6 +214,54 @@ Quando habilitado por configuração, os documentos são indexados em:
 infra-incidents-YYYY.MM.DD
 ```
 
+Configuração via `.env`:
+
+```env
+ORCH_OPENSEARCH__ENABLED=true
+ORCH_OPENSEARCH__HOSTS=["https://opensearch.example.local:9200"]
+ORCH_OPENSEARCH__USERNAME=infra-autoheal-writer
+ORCH_OPENSEARCH__PASSWORD=change-me
+ORCH_OPENSEARCH__VERIFY_CERTS=true
+ORCH_OPENSEARCH__INDEX_PREFIX=infra-incidents
+ORCH_OPENSEARCH__MAX_FIELD_LENGTH=8192
+```
+
+O usuário do OpenSearch deve seguir menor privilégio, com permissão apenas para criar/indexar documentos em:
+
+```text
+infra-incidents-*
+```
+
+Cada documento inclui:
+
+- `timestamp`
+- `correlation_id`
+- `host`
+- `alertname`
+- `action`
+- `status`
+- decisão do roteador e motivo
+- motivo de bloqueio, quando houver
+- comandos executados com `exit_code`, `stdout` e `stderr`
+- validação pós-ação
+- evidências coletadas
+- resposta Proxmox, quando aplicável
+
+Saídas de comando são truncadas por `ORCH_OPENSEARCH__MAX_FIELD_LENGTH` e passam por redação básica de tokens, senhas, secrets, API keys, Authorization Bearer e chaves privadas. O SQLite continua sendo a trilha local obrigatória; falha ao indexar no OpenSearch é registrada em log e não bloqueia o auto-healing.
+
+Consulta por `correlation_id`:
+
+```json
+GET infra-incidents-*/_search
+{
+  "query": {
+    "term": {
+      "correlation_id.keyword": "ddf828bc-bb66-44bd-9be5-faf6b8d87bfb"
+    }
+  }
+}
+```
+
 ## Testes
 
 ```bash
