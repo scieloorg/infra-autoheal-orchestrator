@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from time import monotonic
+
 import structlog
 
 from app.actions.apache import restart_apache
@@ -9,6 +11,7 @@ from app.actions.proxmox import ProxmoxClient, RebootPreconditionChecker, reboot
 from app.actions.ssh import SSHExecutor
 from app.config import HostsConfig, PoliciesConfig, Settings
 from app.models import ActionExecution, ActionName, AlertItem
+from app.notifications.webhook import SlackNotifier
 from app.rules.policies import CircuitBreaker
 from app.rules.router import RunbookRouter
 from app.storage.events import EventStore
@@ -33,6 +36,7 @@ class Orchestrator:
         mysql_validator: MySQLValidator,
         proxmox_client: ProxmoxClient,
         opensearch: OpenSearchIndexer,
+        notifier: SlackNotifier,
     ) -> None:
         self.settings = settings
         self.hosts_config = hosts_config
@@ -44,6 +48,7 @@ class Orchestrator:
         self.mysql_validator = mysql_validator
         self.proxmox_client = proxmox_client
         self.opensearch = opensearch
+        self.notifier = notifier
         self.router = RunbookRouter(hosts_config)
 
     async def process_alert(self, alert: AlertItem) -> ActionExecution:
@@ -64,6 +69,8 @@ class Orchestrator:
                 blocked_reason=decision.reason,
             )
             self._record(execution)
+            if execution.status == "blocked":
+                await self.notifier.action_blocked(execution)
             return execution
 
         host_config = self.hosts_config.hosts[decision.host]
@@ -80,7 +87,11 @@ class Orchestrator:
                 blocked_reason=breaker_reason,
             )
             self._record(execution)
+            await self.notifier.action_blocked(execution)
             return execution
+
+        await self.notifier.action_started(decision)
+        started_at = monotonic()
 
         if decision.action != ActionName.REBOOT_VM:
             self.circuit_breaker.record(
@@ -144,6 +155,10 @@ class Orchestrator:
             )
 
         self._record(execution)
+        if execution.status == "blocked":
+            await self.notifier.action_blocked(execution)
+        else:
+            await self.notifier.action_finished(execution, duration_seconds=monotonic() - started_at)
         return execution
 
     def _record(self, execution: ActionExecution) -> None:

@@ -5,6 +5,7 @@ from functools import lru_cache
 from app.actions.proxmox import ProxmoxClient
 from app.actions.ssh import SSHExecutor
 from app.config import get_hosts_config, get_policies_config, get_settings
+from app.notifications.webhook import SlackNotifier
 from app.rules.policies import CircuitBreaker
 from app.runner import Orchestrator
 from app.storage.events import EventStore
@@ -51,4 +52,5 @@ def get_orchestrator() -> Orchestrator:
         mysql_validator=MySQLValidator(ssh),
         proxmox_client=ProxmoxClient(settings.proxmox),
         opensearch=OpenSearchIndexer(settings.opensearch),
+        notifier=SlackNotifier(settings.slack),
     )

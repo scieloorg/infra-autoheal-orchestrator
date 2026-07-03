@@ -90,6 +90,22 @@ class DisabledOpenSearch(OpenSearchIndexer):
         return None
 
 
+class FakeSlackNotifier:
+    def __init__(self) -> None:
+        self.started = []
+        self.finished = []
+        self.blocked = []
+
+    async def action_started(self, decision) -> None:
+        self.started.append(decision)
+
+    async def action_finished(self, execution, *, duration_seconds: float) -> None:
+        self.finished.append((execution, duration_seconds))
+
+    async def action_blocked(self, execution) -> None:
+        self.blocked.append(execution)
+
+
 @pytest.fixture
 def hosts_config() -> HostsConfig:
     return HostsConfig(
@@ -133,6 +149,7 @@ def orchestrator_factory(tmp_path: Path, hosts_config: HostsConfig, policies: Po
         ssh = FakeSSH(available=ssh_available)
         http = FakeHTTPValidator(success=http_success)
         proxmox = FakeProxmoxClient()
+        notifier = FakeSlackNotifier()
         orchestrator = Orchestrator(
             settings=Settings(sqlite_path=sqlite_path, proxmox=ProxmoxSettings()),
             hosts_config=hosts_config,
@@ -144,6 +161,7 @@ def orchestrator_factory(tmp_path: Path, hosts_config: HostsConfig, policies: Po
             mysql_validator=FakeMySQLValidator(ssh, success=mysql_success),
             proxmox_client=proxmox,
             opensearch=DisabledOpenSearch(),
+            notifier=notifier,
         )
         return orchestrator, ssh, http, proxmox
 

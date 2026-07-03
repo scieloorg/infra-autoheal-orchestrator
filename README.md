@@ -262,6 +262,70 @@ GET infra-incidents-*/_search
 }
 ```
 
+## Slack
+
+Opcionalmente, o orquestrador pode enviar notificações para Slack via Incoming Webhook.
+
+Configuração via `.env`:
+
+```env
+ORCH_SLACK__ENABLED=true
+ORCH_SLACK__WEBHOOK_URL=https://hooks.slack.com/services/...
+ORCH_SLACK__TIMEOUT_SECONDS=5
+```
+
+Eventos enviados:
+
+- início de ação automática, após roteamento e circuit breaker liberarem a execução
+- resultado final da ação, com sucesso/falha e duração aproximada
+- bloqueio da automação, incluindo circuit breaker e precondições de segurança
+
+Exemplo de início:
+
+```text
+🚨 Autoheal iniciado
+Host: node02-submission.scielo.org
+Alerta: MySQLDown
+Ação: restart_mariadb
+Correlation ID: abc-123
+```
+
+Exemplo de sucesso:
+
+```text
+✅ Autoheal concluído
+Host: node02-submission.scielo.org
+Ação: restart_mariadb
+Validação: sucesso
+Duração: 8s
+Correlation ID: abc-123
+```
+
+Exemplo de falha:
+
+```text
+❌ Autoheal falhou
+Host: node02-submission.scielo.org
+Ação: restart_mariadb
+Motivo: validação falhou
+Próximo passo: intervenção humana
+Duração: 8s
+Correlation ID: abc-123
+```
+
+Exemplo de bloqueio:
+
+```text
+⚠️ Autoheal bloqueado por circuit breaker
+Host: mysql.scielo.org
+Alerta: MySQLDown
+Ação: restart_mariadb
+Motivo: circuit breaker open: 2/2 attempts for mariadb in 15m
+Correlation ID: abc-123
+```
+
+Falha ao enviar notificação ao Slack é registrada em log e não bloqueia o auto-healing nem a auditoria SQLite/OpenSearch. Trate a URL do webhook como segredo e injete via `.env` ou secret do ambiente.
+
 ## Testes
 
 ```bash

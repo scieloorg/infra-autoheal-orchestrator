@@ -62,6 +62,12 @@ class OpenSearchSettings(BaseModel):
     max_field_length: int = 8192
 
 
+class SlackSettings(BaseModel):
+    enabled: bool = False
+    webhook_url: SecretStr | None = None
+    timeout_seconds: int = 5
+
+
 class SSHSettings(BaseModel):
     private_key_path: Path | None = None
     known_hosts_path: Path | None = None
@@ -79,6 +85,7 @@ class Settings(BaseSettings):
     ssh: SSHSettings = Field(default_factory=SSHSettings)
     proxmox: ProxmoxSettings = Field(default_factory=ProxmoxSettings)
     opensearch: OpenSearchSettings = Field(default_factory=OpenSearchSettings)
+    slack: SlackSettings = Field(default_factory=SlackSettings)
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:

@@ -60,6 +60,9 @@ async def test_mariadb_down_restarts_only_mariadb_on_allowed_host(orchestrator_f
     assert ("is_active_mariadb", "mariadb") in ssh.calls
     assert ("mysqladmin_ping", "mariadb") in ssh.calls
     assert ("restart_apache", "httpd") not in ssh.calls
+    assert orchestrator.notifier.started[0].action == "restart_mariadb"
+    assert orchestrator.notifier.finished[0][0].status == "success"
+    assert orchestrator.notifier.blocked == []
 
 
 @pytest.mark.asyncio
@@ -157,6 +160,21 @@ async def test_restart_circuit_breaker_blocks_third_attempt(orchestrator_factory
         ("restart_mariadb", "mariadb"),
         ("restart_mariadb", "mariadb"),
     ]
+    assert orchestrator.notifier.blocked[-1].blocked_reason == third.blocked_reason
+
+
+@pytest.mark.asyncio
+async def test_failed_autoheal_sends_failure_notification(orchestrator_factory):
+    orchestrator, _, _, _ = orchestrator_factory(mysql_success=False)
+
+    result = await orchestrator.process_alert(
+        alert("MariaDBDown", "db-node-01.example.local", "restart_mariadb")
+    )
+
+    assert result.status == "failed"
+    assert orchestrator.notifier.started[0].action == "restart_mariadb"
+    assert orchestrator.notifier.finished[0][0].status == "failed"
+    assert orchestrator.notifier.blocked == []
 
 
 @pytest.mark.asyncio
